@@ -1,9 +1,36 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { Logger } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+dotenv.config({
+  path: '.env',
+});
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+  const logger = new Logger('NestChat');
+  const port = +process.env.PORT || 5000;
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const config = new DocumentBuilder()
+    .setTitle('NestChat')
+    .addBearerAuth({
+      name: 'authorization',
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger/api/document', app, document);
+
+  await app.listen(port, () =>
+    logger.log(
+      `Server running at port: ${port} on ${process.env.ENVIROMENT} environment`,
+    ),
+  );
 }
 
 bootstrap();
