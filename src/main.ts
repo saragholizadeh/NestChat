@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { TransformInterceptor } from './common';
 
 dotenv.config({
   path: '.env',
@@ -13,6 +14,8 @@ async function bootstrap() {
   const logger = new Logger('NestChat');
   const port = +process.env.PORT || 5000;
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   const config = new DocumentBuilder()
     .setTitle('NestChat')
