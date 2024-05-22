@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from 'src/common/constants';
 import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common/interfaces';
 import { UserModel } from 'src/database/models';
+import { IUserInsert } from './interfaces';
 
 @Injectable()
 export class UserService {
@@ -17,7 +18,7 @@ export class UserService {
   update = (args: IUpdateArgs, values: UserModel) =>
     this.userRepository.update({ ...values }, { ...args });
 
-  insert = (args: IInsertArgs, user: UserModel) =>
+  insert = (user: IUserInsert, args?: IInsertArgs) =>
     this.userRepository.create({ ...user }, { ...args });
 
   destroy = (args: IFindArgs) => this.userRepository.destroy(args);

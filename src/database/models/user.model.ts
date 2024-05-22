@@ -16,7 +16,7 @@ export class UserModel extends BaseModel {
   lastName: string;
 
   @Column({
-    type: DataType.STRING(20),
+    type: DataType.STRING(25),
     allowNull: false,
   })
   username: string;
