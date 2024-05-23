@@ -2,7 +2,7 @@ import { Filterable, Includeable, Transaction } from 'sequelize';
 
 export interface IFindArgs extends Filterable {
   include?: Includeable | Includeable[];
-  attributes: any[];
+  attributes?: any[];
   order?: any[];
 }
 

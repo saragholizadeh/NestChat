@@ -1,9 +1,9 @@
 import { USER_REPOSITORY } from 'src/common/constants';
-import { UserModel } from '../models';
+import { User } from '../models';
 
 export const userRepository = [
   {
     provide: USER_REPOSITORY,
-    useValue: UserModel,
+    useValue: User,
   },
 ];
