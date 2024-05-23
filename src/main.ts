@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -14,9 +14,22 @@ async function bootstrap() {
   const logger = new Logger('NestChat');
   const port = +process.env.PORT || 5000;
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.setGlobalPrefix('api');
+
+  app.enableCors({
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+    preflightContinue: false,
+  });
 
   app.useGlobalInterceptors(new TransformInterceptor());
 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: false,
+      forbidNonWhitelisted: true,
+      stopAtFirstError: true,
+    }),
+  );
   const config = new DocumentBuilder()
     .setTitle('NestChat')
     .addBearerAuth({
