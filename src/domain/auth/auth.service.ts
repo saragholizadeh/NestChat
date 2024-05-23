@@ -15,7 +15,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const user = await this.userService.findOne({
+    let user = await this.userService.findOne({
       where: { username: registerDto.username },
     });
 
@@ -26,7 +26,7 @@ export class AuthService {
     const payload: IJwtPayload = { username: registerDto.username };
     const token = this.jwtService.sign(payload);
 
-    await this.userService.insert({
+    user = await this.userService.insert({
       ...registerDto,
       password: await argon2.hash(registerDto.password),
     });
