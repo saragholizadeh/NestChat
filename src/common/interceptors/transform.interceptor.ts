@@ -14,12 +14,12 @@ export class TransformInterceptor implements NestInterceptor {
   ): Observable<any> {
     return next.handle().pipe(
       map((response) => {
-        if (response?.isRenderEjs || !response) return response;
+        if (response?.isRenderEjs) return response;
 
         return {
           success: true,
-          message: response.message || 'Operation Successfully Completed.',
-          data: response.data || null,
+          message: response?.message || 'Operation Successfully Completed.',
+          data: response?.data || null,
         };
       }),
     );

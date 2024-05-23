@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { TransformInterceptor } from './common';
+import { HandleExceptionFilter } from './common/filters';
 
 dotenv.config({
   path: '.env',
@@ -22,6 +23,8 @@ async function bootstrap() {
   });
 
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  app.useGlobalFilters(new HandleExceptionFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({
