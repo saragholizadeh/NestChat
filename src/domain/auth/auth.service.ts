@@ -4,6 +4,7 @@ import { RegisterDto, LoginDto } from './dto';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from './interfaces';
+import { User } from 'src/database/models';
 
 @Injectable()
 export class AuthService {
@@ -51,5 +52,8 @@ export class AuthService {
     return token;
   }
 
-  async getUser() {}
+  async getUser(user: User) {
+    console.log(user);
+    return true;
+  }
 }

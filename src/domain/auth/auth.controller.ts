@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards';
+import { User } from 'src/database/models';
+import { GetUser } from './decorators';
 
 @ApiTags(`Auth`)
 @Controller({
@@ -28,9 +30,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('/user')
-  async getUser() {
+  async getUser(@GetUser() user: User) {
     return {
-      data: await this.authService.getUser(),
+      data: await this.authService.getUser(user),
     };
   }
 }
