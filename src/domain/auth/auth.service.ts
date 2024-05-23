@@ -5,6 +5,7 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from './interfaces';
 import { User } from 'src/database/models';
+import { LoginTransform } from './transforms';
 
 @Injectable()
 export class AuthService {
@@ -14,12 +15,11 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const userExist = await this.userService.findOne({
+    const user = await this.userService.findOne({
       where: { username: registerDto.username },
-      attributes: ['id'],
     });
 
-    if (userExist) {
+    if (user) {
       throw new BadRequestException('Duplicate Username');
     }
 
@@ -31,29 +31,30 @@ export class AuthService {
       password: await argon2.hash(registerDto.password),
     });
 
-    return token;
+    return {
+      ...new LoginTransform().transform(user),
+      token,
+    };
   }
 
   async login(loginDto: LoginDto) {
-    const userExist = await this.userService.findOne({
+    const user = await this.userService.findOne({
       where: { username: loginDto.username },
-      attributes: ['password'],
     });
 
-    if (
-      !userExist ||
-      !(await argon2.verify(userExist.password, loginDto.password))
-    ) {
+    if (!user || !(await argon2.verify(user.password, loginDto.password))) {
       throw new BadRequestException('Username or password is wrong');
     }
 
     const payload: IJwtPayload = { username: loginDto.username };
     const token = this.jwtService.sign(payload);
-    return token;
+    return {
+      user: new LoginTransform().transform(user),
+      token,
+    };
   }
 
   async getUser(user: User) {
-    console.log(user);
-    return true;
+    return new LoginTransform().transform(user);
   }
 }
