@@ -13,4 +13,6 @@ export class AuthService {
     });
   }
   async login() {}
+
+  async getUser() {}
 }
