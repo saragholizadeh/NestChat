@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user';
-import { RegisterDto } from './dto';
+import { RegisterDto, LoginDto } from './dto';
 import * as argon2 from 'argon2';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class AuthService {
       password: await argon2.hash(registerDto.password),
     });
   }
-  async login() {}
+  async login(_loginDto: LoginDto) {}
 
   async getUser() {}
 }
