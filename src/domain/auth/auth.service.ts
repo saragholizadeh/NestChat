@@ -4,8 +4,7 @@ import { RegisterDto, LoginDto } from './dto';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from './interfaces';
-import { User } from 'src/database/models';
-import { LoginTransform } from './transforms';
+import { UserTransform } from '../user';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +31,7 @@ export class AuthService {
     });
 
     return {
-      ...new LoginTransform().transform(user),
+      ...new UserTransform().transform(user),
       token,
     };
   }
@@ -49,12 +48,8 @@ export class AuthService {
     const payload: IJwtPayload = { username: loginDto.username };
     const token = this.jwtService.sign(payload);
     return {
-      user: new LoginTransform().transform(user),
+      user: new UserTransform().transform(user),
       token,
     };
-  }
-
-  async getUser(user: User) {
-    return new LoginTransform().transform(user);
   }
 }

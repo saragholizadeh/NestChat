@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from 'src/common/constants';
 import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common/interfaces';
-import { User } from 'src/database/models';
+import { User } from 'src/database';
 import { IUserInsert } from './interfaces';
+import { UserTransform } from './transforms';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class UserService {
@@ -22,4 +24,19 @@ export class UserService {
     this.userRepository.create({ ...user }, { ...args });
 
   destroy = (args: IFindArgs) => this.userRepository.destroy(args);
+
+  async getUser(user: User) {
+    return new UserTransform().transform(user);
+  }
+
+  async userList(user: User) {
+    const users = await this.findAll({
+      where: {
+        id: {
+          [Op.notIn]: user.id,
+        },
+      },
+    });
+    return new UserTransform().transformCollection(users);
+  }
 }
