@@ -30,12 +30,15 @@ export class UserService {
   }
 
   async userList(user: User) {
+    console.log(user);
+
     const users = await this.findAll({
       where: {
         id: {
-          [Op.notIn]: user.id,
+          [Op.not]: user.id,
         },
       },
+      order: [['id', 'DESC']],
     });
     return new UserTransform().transformCollection(users);
   }
