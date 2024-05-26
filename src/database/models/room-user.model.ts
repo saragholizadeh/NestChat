@@ -6,6 +6,7 @@ import {
   ForeignKey,
   Table,
 } from 'sequelize-typescript';
+
 @Table
 export class RoomUser extends BaseModel {
   @ForeignKey(() => User)
