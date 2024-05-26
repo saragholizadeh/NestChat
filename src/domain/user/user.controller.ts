@@ -7,7 +7,7 @@ import { User } from 'src/database';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@ApiTags(`User`)
+@ApiTags(`Users`)
 @Controller({
   path: 'user',
 })

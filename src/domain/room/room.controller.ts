@@ -1,7 +1,14 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { RoomService } from './room.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth';
 
-@Controller('room')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags(`Rooms`)
+@Controller({
+  path: 'rooms',
+})
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 }
