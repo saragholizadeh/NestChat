@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ROOM_REPOSITORY, ROOM_USER_REPOSITORY } from 'src/common';
-import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common/interfaces';
+import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common';
 import { RoomUser, Room, User } from 'src/database';
-import { IUserInsert } from '../user';
 
 @Injectable()
 export class RoomService {
@@ -20,8 +19,8 @@ export class RoomService {
   update = (args: IUpdateArgs, values: User) =>
     this.roomRepository.update({ ...values }, { ...args });
 
-  insert = (user: IUserInsert, args?: IInsertArgs) =>
-    this.roomRepository.create({ ...user }, { ...args });
+  insert = (room: Room, args?: IInsertArgs) =>
+    this.roomRepository.create({ ...room }, { ...args });
 
   destroy = (args: IFindArgs) => this.roomRepository.destroy(args);
 
