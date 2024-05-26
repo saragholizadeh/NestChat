@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from 'src/common/constants';
-import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common/interfaces';
+import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common';
 import { User } from 'src/database';
 import { IUserInsert } from './interfaces';
 import { UserTransform } from './transforms';

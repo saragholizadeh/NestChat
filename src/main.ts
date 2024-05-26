@@ -4,8 +4,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { TransformInterceptor } from './common';
-import { HandleExceptionFilter } from './common/filters';
+import { TransformInterceptor, HandleExceptionFilter } from './common';
 
 dotenv.config({
   path: '.env',
