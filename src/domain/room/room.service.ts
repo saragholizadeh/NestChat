@@ -24,4 +24,6 @@ export class RoomService {
     this.roomRepository.create({ ...user }, { ...args });
 
   destroy = (args: IFindArgs) => this.roomRepository.destroy(args);
+
+  async userRooms(user: User) {}
 }
