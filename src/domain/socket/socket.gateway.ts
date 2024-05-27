@@ -1,6 +1,7 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { SocketService } from '.';
+import { verifyToken } from './libs';
 
 @WebSocketGateway({ cors: '*' })
 export class SocketGateway {
@@ -11,8 +12,12 @@ export class SocketGateway {
 
   private readonly connectedClients: Map<string, Socket> = new Map();
   async handleConnection(socket: Socket): Promise<void> {
-    const headers = socket.handshake.headers;
-    if (headers && headers.auth) {
+    if (socket.handshake.headers && socket.handshake.headers.auth) {
+      const token: any = socket.handshake.headers.auth;
+      const user = verifyToken(token);
+      if (user) {
+        console.log('hi');
+      }
     }
   }
 }
