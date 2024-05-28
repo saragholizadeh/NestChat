@@ -27,6 +27,7 @@ export class SocketGateway {
 
       if (user) {
         const rooms = await this.roomService.userJoinedRooms(user.id);
+        console.log({ rooms });
         const activeRooms: number[] = [];
 
         rooms.forEach((room: RoomUser) => {
@@ -55,9 +56,7 @@ export class SocketGateway {
             userIndex
           ].rooms.activeRooms.filter((item) => item != data.roomId);
 
-          console.log('you joined');
-
-          socket.to(`${data.roomId}`).emit('joined_pv', {
+          socket.to(`${data.roomId}`).emit('joined_room', {
             roomId: data.roomId,
           });
         });
