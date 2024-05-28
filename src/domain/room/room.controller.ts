@@ -1,4 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { RoomService } from './room.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser, JwtAuthGuard } from '../auth';
@@ -15,6 +22,16 @@ export class RoomController {
   async userRooms(@GetUser() user: User) {
     return {
       data: await this.roomService.userRooms(user),
+    };
+  }
+
+  @Post('/createRoom')
+  async createRoom(
+    @GetUser() user: User,
+    @Query('userId', ParseIntPipe) otherUserId: number,
+  ) {
+    return {
+      data: await this.roomService.createRoom(user, otherUserId),
     };
   }
 }
