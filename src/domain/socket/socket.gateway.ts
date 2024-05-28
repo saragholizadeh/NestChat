@@ -62,6 +62,7 @@ export class SocketGateway {
 
           socket.to(`${data.roomId}`).emit('joined_room', {
             roomId: data.roomId,
+            message: 'Your friend joined the chat',
           });
         });
 
@@ -71,6 +72,19 @@ export class SocketGateway {
           userRooms.joinedRoom = null;
           userRooms.activeRooms.push(data.roomId);
           socket.leave(`${data.roomId}`);
+          socket.to(`${data.roomId}`).emit('left_room', {
+            roomId: data.roomId,
+            message: 'Your friend left the chat',
+          });
+        });
+
+        socket.on('disconnect', () => {
+          const userIndex = this.getUserIndex(user.id);
+          if (userIndex !== -1) {
+            this.users.splice(userIndex, 1);
+          }
+          console.log('Client ' + clientId + ' disconnected');
+          this.connectedClients.delete(clientId);
         });
       }
     }
