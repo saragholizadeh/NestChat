@@ -19,6 +19,15 @@ export class SocketGateway {
 
   private users: ISocketUsers[] = [];
 
+  private getUserIndex(userId: number) {
+    const index = this.users
+      .map((el) => {
+        return el.userId;
+      })
+      .indexOf(userId);
+    return index;
+  }
+
   async handleConnection(socket: Socket): Promise<void> {
     if (socket.handshake.headers && socket.handshake.headers.auth) {
       const token: any = socket.handshake.headers.auth;
@@ -27,7 +36,6 @@ export class SocketGateway {
 
       if (user) {
         const rooms = await this.roomService.userJoinedRooms(user.id);
-        console.log({ rooms });
         const activeRooms: number[] = [];
 
         rooms.forEach((room: RoomUser) => {
@@ -45,11 +53,7 @@ export class SocketGateway {
         });
 
         socket.on('join_room', async (data: IJoinedRooms) => {
-          const userIndex = this.users
-            .map((el) => {
-              return el.userId;
-            })
-            .indexOf(user.id);
+          const userIndex = this.getUserIndex(user.id);
           const userRooms = this.users[userIndex].rooms;
           userRooms.joinedRoom = data.roomId;
           userRooms.activeRooms = this.users[
@@ -59,6 +63,14 @@ export class SocketGateway {
           socket.to(`${data.roomId}`).emit('joined_room', {
             roomId: data.roomId,
           });
+        });
+
+        socket.on('leave_room', async (data: IJoinedRooms) => {
+          const userIndex = this.getUserIndex(user.id);
+          const userRooms = this.users[userIndex].rooms;
+          userRooms.joinedRoom = null;
+          userRooms.activeRooms.push(data.roomId);
+          socket.leave(`${data.roomId}`);
         });
       }
     }
