@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ROOM_REPOSITORY, ROOM_USER_REPOSITORY } from 'src/common';
 import { IFindArgs, IUpdateArgs, IInsertArgs } from 'src/common';
 import { RoomUser, Room, User } from 'src/database';
-
+import { UserJoinedRoomsTransform } from '.';
 @Injectable()
 export class RoomService {
   constructor(
@@ -24,5 +24,16 @@ export class RoomService {
 
   destroy = (args: IFindArgs) => this.roomRepository.destroy(args);
 
-  async userRooms(user: User) {}
+  async userRooms(user: User) {
+    return user;
+  }
+
+  async userJoinedRooms(userId: number) {
+    const rooms = await this.roomUserRepository.findAll({
+      where: {
+        userId,
+      },
+    });
+    return new UserJoinedRoomsTransform().transformCollection(rooms);
+  }
 }
