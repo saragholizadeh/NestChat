@@ -22,13 +22,16 @@ export class AuthService {
       throw new BadRequestException('Duplicate Username');
     }
 
-    const payload: IJwtPayload = { username: registerDto.username };
-    const token = this.jwtService.sign(payload);
-
     user = await this.userService.insert({
       ...registerDto,
       password: await argon2.hash(registerDto.password),
     });
+
+    const payload: IJwtPayload = {
+      username: registerDto.username,
+      id: user.id,
+    };
+    const token = this.jwtService.sign(payload);
 
     return {
       ...new UserTransform().transform(user),
@@ -45,7 +48,7 @@ export class AuthService {
       throw new BadRequestException('Username or password is wrong');
     }
 
-    const payload: IJwtPayload = { username: loginDto.username };
+    const payload: IJwtPayload = { username: loginDto.username, id: user.id };
     const token = this.jwtService.sign(payload);
     return {
       user: new UserTransform().transform(user),

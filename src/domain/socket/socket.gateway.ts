@@ -14,9 +14,12 @@ export class SocketGateway {
   async handleConnection(socket: Socket): Promise<void> {
     if (socket.handshake.headers && socket.handshake.headers.auth) {
       const token: any = socket.handshake.headers.auth;
-      const user = verifyToken(token);
+      const user: any = verifyToken(token);
       if (user) {
-        console.log('hi');
+        const rooms = await this.socketService.userRooms(user.id);
+        socket.on('join_room', async (data: any) => {
+          console.log('hey');
+        });
       }
     }
   }
