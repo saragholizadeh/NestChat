@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { SocketService, ISocketUsers } from '.';
+import { SocketService, ISocketUsers, IJoinedRooms } from '.';
 import { verifyToken } from './libs';
 import { RoomService } from '../room';
 import { RoomUser } from 'src/database';
@@ -43,8 +43,23 @@ export class SocketGateway {
           },
         });
 
-        socket.on('join_room', async (data: any) => {
-          console.log('hey');
+        socket.on('join_room', async (data: IJoinedRooms) => {
+          const userIndex = this.users
+            .map((el) => {
+              return el.userId;
+            })
+            .indexOf(user.id);
+          const userRooms = this.users[userIndex].rooms;
+          userRooms.joinedRoom = data.roomId;
+          userRooms.activeRooms = this.users[
+            userIndex
+          ].rooms.activeRooms.filter((item) => item != data.roomId);
+
+          console.log('you joined');
+
+          socket.to(`${data.roomId}`).emit('joined_pv', {
+            roomId: data.roomId,
+          });
         });
       }
     }
