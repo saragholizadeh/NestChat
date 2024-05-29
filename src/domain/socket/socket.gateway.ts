@@ -79,7 +79,6 @@ export class SocketGateway {
         });
 
         socket.on('send_message', async (data: ISendMessage) => {
-          const userIndex = this.getUserIndex(user.id);
           const sendMessage = await this.socketService.sendMessage({
             roomId: data.roomId,
             userId: user.id,

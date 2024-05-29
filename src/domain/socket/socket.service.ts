@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { RoomService } from '../room/room.service';
-import { ISendMessageArgs } from './interfaces';
+import { ISendMessageArgs, IFindOtherUserIdArgs } from './interfaces';
 import { MessageService } from '../message';
+import { Message, RoomUser } from 'src/database';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class SocketService {
@@ -10,10 +12,34 @@ export class SocketService {
     private readonly messageService: MessageService,
   ) {}
 
-  async sendMessage(args: ISendMessageArgs) {
+  async findOtherUserId(args: IFindOtherUserIdArgs): Promise<number> {
+    const room = await this.roomService.findAll({
+      where: {
+        id: args.roomId,
+      },
+      include: {
+        model: RoomUser,
+        as: 'roomUsers',
+        where: {
+          userId: {
+            [Op.not]: args.userId,
+          },
+        },
+      },
+    });
+
+    const otherUserId = room[0].roomUsers[0];
+    console.log(otherUserId.userId);
+    return otherUserId.userId;
+  }
+
+  async sendMessage(args: ISendMessageArgs): Promise<Message> {
     const message = await this.messageService.insert({
       body: args.message,
-      recipientId: 44,
+      recipientId: await this.findOtherUserId({
+        roomId: args.roomId,
+        userId: args.userId,
+      }),
       roomId: args.roomId,
       seen: false,
       senderId: args.userId,
