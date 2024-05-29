@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { SocketService, ISocketUsers, IJoinedRooms } from '.';
+import { SocketService, ISocketUsers, IJoinedRooms, ISendMessage } from '.';
 import { verifyToken } from './libs';
 import { RoomService } from '../room';
 import { RoomUser } from 'src/database';
@@ -78,11 +78,31 @@ export class SocketGateway {
           });
         });
 
+        socket.on('send_message', async (data: ISendMessage) => {
+          const userIndex = this.getUserIndex(user.id);
+          const sendMessage = await this.socketService.sendMessage({
+            roomId: data.roomId,
+            userId: user.id,
+            message: data.message,
+          });
+
+          socket.to(`${data.roomId}`).emit('receive_msg', {
+            ...sendMessage,
+            self: false,
+          });
+
+          socket.emit('receive_msg', {
+            ...sendMessage,
+            self: true,
+          });
+        });
+
         socket.on('disconnect', () => {
           const userIndex = this.getUserIndex(user.id);
           if (userIndex !== -1) {
             this.users.splice(userIndex, 1);
           }
+
           console.log('Client ' + clientId + ' disconnected');
           this.connectedClients.delete(clientId);
         });
