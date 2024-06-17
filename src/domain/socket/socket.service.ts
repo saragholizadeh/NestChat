@@ -29,7 +29,6 @@ export class SocketService {
     });
 
     const otherUserId = room[0].roomUsers[0];
-    console.log(otherUserId.userId);
     return otherUserId.userId;
   }
 

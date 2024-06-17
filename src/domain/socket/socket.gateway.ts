@@ -4,6 +4,8 @@ import { SocketService, ISocketUsers, IJoinedRooms, ISendMessage } from '.';
 import { verifyToken } from './libs';
 import { RoomService } from '../room';
 import { RoomUser } from 'src/database';
+import { JoinRoomDto } from './dto';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @WebSocketGateway({ cors: '*' })
 export class SocketGateway {
@@ -28,6 +30,7 @@ export class SocketGateway {
     return index;
   }
 
+  @UsePipes(new ValidationPipe())
   async handleConnection(socket: Socket): Promise<void> {
     if (socket.handshake.headers && socket.handshake.headers.auth) {
       const token: any = socket.handshake.headers.auth;
@@ -52,7 +55,8 @@ export class SocketGateway {
           },
         });
 
-        socket.on('join_room', async (data: IJoinedRooms) => {
+        socket.on('join_room', async (data: JoinRoomDto) => {
+          console.log('you should not see me');
           const userIndex = this.getUserIndex(user.id);
           const userRooms = this.users[userIndex].rooms;
           userRooms.joinedRoom = data.roomId;
