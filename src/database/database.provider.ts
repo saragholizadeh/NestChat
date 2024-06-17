@@ -11,10 +11,11 @@ export const databaseProviders = [
         username: process.env.PG_DB_USER,
         password: process.env.PG_DB_PASSWORD,
         database: process.env.PG_DB_NAME,
+        logging: false,
       });
       sequelize.addModels([User, Room, RoomUser, Message]);
       // await sequelize.sync({ force: true });
-      await sequelize.sync({ alter: true });
+      // await sequelize.sync({ alter: true });
 
       return sequelize;
     },

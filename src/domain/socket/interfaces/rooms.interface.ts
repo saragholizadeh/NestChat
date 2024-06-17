@@ -12,5 +12,6 @@ export interface ISendMessage {
 }
 
 export interface ISendMessageArgs extends ISendMessage {
+  seen: boolean;
   userId: number;
 }
