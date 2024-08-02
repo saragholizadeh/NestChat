@@ -1,10 +1,16 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { SocketService, ISocketUsers, IJoinedRooms, ISendMessage } from '.';
+import { SocketService, ISocketUsers } from '.';
 import { verifyToken } from './libs';
 import { RoomService } from '../room';
 import { RoomUser } from 'src/database';
-import { JoinRoomDto } from './dto';
+import { JoinRoomDto, SendMessageDto } from './dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { IFindOtherUserIdArgs } from './interfaces';
 
@@ -62,65 +68,8 @@ export class SocketGateway {
             activeRooms,
           },
         });
-
-        socket.on('join_room', async (data: JoinRoomDto) => {
-          const userIndex = this.getUserIndex(user.id);
-          const userRooms = this.users[userIndex].rooms;
-          userRooms.joinedRoom = data.roomId;
-          userRooms.activeRooms = this.users[
-            userIndex
-          ].rooms.activeRooms.filter((item) => item != data.roomId);
-
-          socket.to(`${data.roomId}`).emit('joined_room', {
-            roomId: data.roomId,
-            message: 'Your friend joined the chat',
-          });
-        });
-
-        socket.on('leave_room', async (data: IJoinedRooms) => {
-          const userIndex = this.getUserIndex(user.id);
-          const userRooms = this.users[userIndex].rooms;
-
-          userRooms.joinedRoom = null;
-          userRooms.activeRooms.push(data.roomId);
-
-          socket.leave(`${data.roomId}`);
-          socket.to(`${data.roomId}`).emit('left_room', {
-            roomId: data.roomId,
-            message: 'Your friend left the chat',
-          });
-        });
-
-        socket.on('send_message', async (data: ISendMessage) => {
-          const otherUserId = await this.socketService.findOtherUserId({
-            roomId: data.roomId,
-            userId: user.id,
-          });
-
-          const hasJoined = this.checkUserHasJoined({
-            userId: otherUserId,
-            roomId: data.roomId,
-          });
-
-          const sendMessage = await this.socketService.sendMessage({
-            seen: !!hasJoined,
-            roomId: data.roomId,
-            userId: user.id,
-            message: data.message,
-          });
-
-          /* emit to the recipient*/
-          socket.to(`${data.roomId}`).emit('receive_msg', {
-            ...sendMessage,
-            self: false,
-          });
-
-          /* emit to the sender*/
-          socket.emit('receive_msg', {
-            ...sendMessage,
-            self: true,
-          });
-        });
+        this.connectedClients.set(clientId, socket);
+        socket.handshake.query.userId = user.id;
 
         socket.on('disconnect', () => {
           const userIndex = this.getUserIndex(user.id);
@@ -133,5 +82,85 @@ export class SocketGateway {
         });
       }
     }
+  }
+
+  @SubscribeMessage('join_room')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async handleJoinRoom(
+    @MessageBody() data: JoinRoomDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const userIndex = this.getUserIndex(+socket.handshake.query.userId);
+    if (userIndex !== -1) {
+      const userRooms = this.users[userIndex].rooms;
+      userRooms.joinedRoom = data.roomId;
+      userRooms.activeRooms = this.users[userIndex].rooms.activeRooms.filter(
+        (item) => item != data.roomId,
+      );
+
+      socket.to(`${data.roomId}`).emit('joined_room', {
+        roomId: data.roomId,
+        message: 'Your friend joined the chat',
+      });
+    }
+  }
+
+  @SubscribeMessage('leave_room')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async handleLeaveRoom(
+    @MessageBody() data: JoinRoomDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const userIndex = this.getUserIndex(+socket.handshake.query.userId);
+    if (userIndex !== -1) {
+      const userRooms = this.users[userIndex].rooms;
+      userRooms.joinedRoom = null;
+      userRooms.activeRooms.push(data.roomId);
+
+      socket.leave(`${data.roomId}`);
+      socket.to(`${data.roomId}`).emit('left_room', {
+        roomId: data.roomId,
+        message: 'Your friend left the chat',
+      });
+    }
+  }
+
+  @SubscribeMessage('send_message')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async handleSendMessage(
+    @MessageBody() data: SendMessageDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const userId = +socket.handshake.query.userId;
+    const otherUserId = await this.socketService.findOtherUserId({
+      roomId: data.roomId,
+      userId,
+    });
+
+    const hasJoined = this.checkUserHasJoined({
+      userId: otherUserId,
+      roomId: data.roomId,
+    });
+
+    const sendMessage = await this.socketService.sendMessage({
+      seen: !!hasJoined,
+      roomId: data.roomId,
+      userId,
+      message: data.message,
+    });
+
+    /* emit to the recipient */
+    socket.to(`${data.roomId}`).emit('receive_msg', {
+      ...sendMessage,
+      seen: !!hasJoined,
+      self: false,
+    });
+
+    /* emit to the sender */
+    socket.emit('receive_msg', {
+      ...sendMessage,
+      seen: !!hasJoined,
+      self: true,
+    });
   }
 }
